@@ -34,9 +34,8 @@ def main():
         output_digits = [Digits.sort_seven_segments(digit) for digit in output_digits.split(' ')]
         data.append((input_digits, output_digits))
 
-    # part 1
-    simple_digits_count = 0
-    output_values_sum = 0
+    simple_digits_count = 0  # part 1
+    output_values_sum = 0  # part 2
 
     for input_digits, output_digits in data:
         found_digits = Digits()
