@@ -82,7 +82,7 @@ def main():
     top3_basins = Counter(cave.terrain_idx.values()).most_common(3)
     top3_sizes = [basin_size for basin_id, basin_size in top3_basins]
 
-    print(f"{top3_basins=} -> {top3_sizes[0]*top3_sizes[1]*top3_sizes[2]}")
+    print(f"{top3_basins=} -> {np.product(top3_sizes)}")
 
 
 if __name__ == "__main__":
