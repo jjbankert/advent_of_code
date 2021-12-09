@@ -1,10 +1,10 @@
 import itertools
+from collections import Counter
 
 import numpy as np
 from scipy import ndimage
 
 from aoc_2021 import load_data
-from collections import Counter
 
 
 def neighbors_smaller(window: np.array):
