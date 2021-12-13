@@ -1,5 +1,5 @@
-from collections import defaultdict
 from itertools import product
+
 from aoc_2021 import load_data
 
 
@@ -27,10 +27,7 @@ def main():
         if x == 0:
             print()
 
-        if (x, y) in dots:
-            print("X", end="")
-        else:
-            print(" ", end="")
+        print("X", end="") if (x, y) in dots else print(" ", end="")
 
 
 def fold(dots, dimension, position):
