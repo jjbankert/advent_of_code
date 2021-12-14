@@ -1,5 +1,6 @@
-from aoc_2021 import load_data
 from collections import Counter, defaultdict
+
+from aoc_2021 import load_data
 
 
 def main():
