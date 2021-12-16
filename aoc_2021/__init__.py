@@ -24,10 +24,11 @@ def load_data(python_file_path_string: str, splitlines=True):
 
 
 def download_input(year, day, filepath):
-    data = requests.get(
+    response = requests.get(
         f'https://adventofcode.com/{str(year)}/day/{str(day)}/input',
         cookies=config['cookies']
-    ).text
+    )
+    response.raise_for_status()
 
     with open(filepath, 'w', encoding='utf-8') as outfile:
-        outfile.write(data)
+        outfile.write(response.text)
