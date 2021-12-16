@@ -16,6 +16,17 @@ def main():
 
 
 class Decoder:
+    OPERATORS = [
+        sum,
+        np.product,
+        min,
+        max,
+        None,
+        lambda values: values[0] > values[1],
+        lambda values: values[0] < values[1],
+        lambda values: values[0] == values[1],
+    ]
+
     def __init__(self, packet):
         self.packet = packet
         self.cursor = 0
@@ -44,7 +55,7 @@ class Decoder:
                     operand_values.append(self.decode_packet())
 
             # part 2
-            result = self.decode_operator(packet_type, operand_values)
+            result = self.OPERATORS[packet_type](operand_values)
 
         return result
 
@@ -67,26 +78,6 @@ class Decoder:
                 break
 
         return int(literal_value_bits, 2)
-
-    @staticmethod
-    def decode_operator(packet_type, operand_values):
-        match packet_type:
-            case 0:
-                return sum(operand_values)
-            case 1:
-                return np.product(operand_values)
-            case 2:
-                return min(operand_values)
-            case 3:
-                return max(operand_values)
-            case 5:
-                return 1 if operand_values[0] > operand_values[1] else 0
-            case 6:
-                return 1 if operand_values[0] < operand_values[1] else 0
-            case 7:
-                return 1 if operand_values[0] == operand_values[1] else 0
-            case _:
-                raise NotImplemented
 
 
 if __name__ == '__main__':
