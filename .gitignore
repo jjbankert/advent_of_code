@@ -1,4 +1,6 @@
 # Project exclude paths
+config.json
+
 /venv/
 
 .idea/
