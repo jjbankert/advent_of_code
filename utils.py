@@ -13,3 +13,9 @@ def get_grid_neighbors(grid, row, col, diagonal=False) -> set[tuple[int, int]]:
         neigbors.add((row, col + 1))
 
     return neigbors
+
+
+def gauss_summation(n) -> int:
+    """calculate 1+2+...+n"""
+    n = abs(n)
+    return round(n * (n + 1) / 2)

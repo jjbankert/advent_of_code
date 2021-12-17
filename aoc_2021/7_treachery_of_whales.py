@@ -1,6 +1,7 @@
 import numpy as np
 
 from aoc_2021 import load_data
+from utils import gauss_summation
 
 
 def main():
@@ -17,17 +18,11 @@ def main():
 
     # part 2
     idx_costs = {
-        candidate_idx: np.sum(gauss_sum(data - candidate_idx))
+        candidate_idx: np.sum(gauss_summation(data - candidate_idx))
         for candidate_idx in range(data.min(), data.max() + 1)
     }
 
     cheapest_idx(idx_costs)
-
-
-@np.vectorize
-def gauss_sum(steps):
-    steps = abs(steps)
-    return steps * (steps + 1) / 2
 
 
 def cheapest_idx(idx_costs):
