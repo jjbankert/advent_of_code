@@ -1,12 +1,11 @@
+from aoc_2021 import load_data
 import numpy as np
 from scipy import ndimage
-
-from aoc_2021 import load_data
 
 
 def main():
     # preprocessing
-    lookup_table, _, *image = load_data(__file__)
+    lookup_table, *image = load_data(__file__)
     lookup_table = [pixel_to_binary(pixel) for pixel in lookup_table]
     image = np.array(
         [[pixel_to_binary(pixel) for pixel in row] for row in image],
