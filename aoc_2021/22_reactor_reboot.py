@@ -46,17 +46,19 @@ class Bounds:
     def overlaps(self, other_bounds):
         return not self.min > other_bounds.max and not self.max < other_bounds.min
 
-    def subtract_lower(self, other_bounds):
-        if self.min <= other_bounds.min <= self.max:
-            return Bounds(self.min, other_bounds.min - 1), Bounds(other_bounds.min, self.max)
+    @staticmethod
+    def subtract_lower(one_bounds, other_bounds):
+        if one_bounds.min <= other_bounds.min <= one_bounds.max:
+            return Bounds(one_bounds.min, other_bounds.min - 1), Bounds(other_bounds.min, one_bounds.max)
         else:
-            return None, self
+            return None, one_bounds
 
-    def subtract_upper(self, other_bounds):
-        if self.min <= other_bounds.max <= self.max:
-            return Bounds(other_bounds.max + 1, self.max), Bounds(self.min, other_bounds.max)
+    @staticmethod
+    def subtract_upper(one_bounds, other_bounds):
+        if one_bounds.min <= other_bounds.max <= one_bounds.max:
+            return Bounds(other_bounds.max + 1, one_bounds.max), Bounds(one_bounds.min, other_bounds.max)
         else:
-            return None, self
+            return None, one_bounds
 
     def __repr__(self):
         return f"{self.min}..{self.max}"
@@ -89,29 +91,22 @@ class Box:
             return {self}
 
         resolved_boxes = set()
-        unresolved_boxes = {self}
+        unresolved_box = self
 
-        for dimension, side_subtract_function_str in product(self.dimensions, ['subtract_lower', 'subtract_upper']):
-            if not unresolved_boxes:
+        for dimension, side_subtract_function in product(
+                self.dimensions,
+                [Bounds.subtract_lower, Bounds.subtract_upper]
+        ):
+            resolved_bounds, unresolved_bounds = side_subtract_function(unresolved_box[dimension], other_box[dimension])
+
+            if resolved_bounds:
+                resolved_box = Box(unresolved_box.dimensions | {dimension: resolved_bounds})
+                if resolved_box.is_valid():
+                    resolved_boxes.add(resolved_box)
+
+            unresolved_box = Box(unresolved_box.dimensions | {dimension: unresolved_bounds})
+            if not unresolved_box.is_valid():
                 break
-
-            new_unresolved_boxes = set()
-            while unresolved_boxes:
-                unresolved_box = unresolved_boxes.pop()
-
-                side_subtract_function = getattr(unresolved_box[dimension], side_subtract_function_str)
-                resolved_bounds, unresolved_bounds = side_subtract_function(other_box[dimension])
-
-                if resolved_bounds:
-                    resolved_box = Box(unresolved_box.dimensions | {dimension: resolved_bounds})
-                    if resolved_box.is_valid():
-                        resolved_boxes.add(resolved_box)
-
-                new_unresolved_box = Box(unresolved_box.dimensions | {dimension: unresolved_bounds})
-                if new_unresolved_box.is_valid():
-                    new_unresolved_boxes.add(new_unresolved_box)
-
-            unresolved_boxes = new_unresolved_boxes
 
         return resolved_boxes
 
@@ -152,33 +147,33 @@ def fancy_boxes_solution(data):
 
 
 if __name__ == '__main__':
-    # # equal boxes
-    # assert Box.from_str('x=0..1,y=0..1,z=0..1') == Box.from_str('x=0..1,y=0..1,z=0..1')
-    #
-    # # overlapping boxes in 1 dimension
-    # assert Box.from_str('x=0..2').subtract(Box.from_str('x=2..2')) == {Box.from_str('x=0..1')}
-    # assert Box.from_str('x=0..1,y=0..1,z=0..1').subtract(Box.from_str('x=0..0,y=0..1,z=0..1')) == \
-    #        {Box.from_str('x=1..1,y=0..1,z=0..1')}
-    #
-    # # non-overlapping boxes
-    # assert Box.from_str('x=1..1,y=0..1,z=0..1').subtract(Box.from_str('x=0..0,y=0..1,z=0..1')) == \
-    #        {Box.from_str('x=1..1,y=0..1,z=0..1')}
-    # assert Box.from_str('x=0..2,y=0..2,z=0..0').subtract(Box.from_str('x=1..2,y=1..2,z=1..1')) == \
-    #        {Box.from_str('x=0..2,y=0..2,z=0..0')}
-    #
-    # # 2d boxes overlapping in 2 dimensions
-    # assert Box.from_str('x=0..2,y=0..2').subtract(Box.from_str('x=1..3,y=1..3')) == \
-    #        {Box.from_str('x=0..0,y=0..2'), Box.from_str('x=1..2,y=0..0')}
-    # assert Box.from_str('x=1..3,y=1..3').subtract(Box.from_str('x=0..2,y=0..2')) == \
-    #        {Box.from_str('x=3..3,y=1..3'), Box.from_str('x=1..2,y=3..3')}
-    #
-    # # 3d boxes overlapping in 3 dimensions
-    # assert Box.from_str('x=0..2,y=0..2,z=0..2').subtract(Box.from_str('x=1..3,y=1..3,z=1..3')) == \
-    #        {Box.from_str('x=0..0,y=0..2,z=0..2'), Box.from_str('x=1..2,y=0..0,z=0..2'),
-    #         Box.from_str('x=1..2,y=1..2,z=0..0')}
-    #
-    # # full overlap
-    # assert Box.from_str('x=0..1,y=0..1,z=0..1').subtract(Box.from_str('x=0..1,y=0..1,z=0..1')) == set()
+    # equal boxes
+    assert Box.from_str('x=0..1,y=0..1,z=0..1') == Box.from_str('x=0..1,y=0..1,z=0..1')
+
+    # overlapping boxes in 1 dimension
+    assert Box.from_str('x=0..2').subtract(Box.from_str('x=2..2')) == {Box.from_str('x=0..1')}
+    assert Box.from_str('x=0..1,y=0..1,z=0..1').subtract(Box.from_str('x=0..0,y=0..1,z=0..1')) == \
+           {Box.from_str('x=1..1,y=0..1,z=0..1')}
+
+    # non-overlapping boxes
+    assert Box.from_str('x=1..1,y=0..1,z=0..1').subtract(Box.from_str('x=0..0,y=0..1,z=0..1')) == \
+           {Box.from_str('x=1..1,y=0..1,z=0..1')}
+    assert Box.from_str('x=0..2,y=0..2,z=0..0').subtract(Box.from_str('x=1..2,y=1..2,z=1..1')) == \
+           {Box.from_str('x=0..2,y=0..2,z=0..0')}
+
+    # 2d boxes overlapping in 2 dimensions
+    assert Box.from_str('x=0..2,y=0..2').subtract(Box.from_str('x=1..3,y=1..3')) == \
+           {Box.from_str('x=0..0,y=0..2'), Box.from_str('x=1..2,y=0..0')}
+    assert Box.from_str('x=1..3,y=1..3').subtract(Box.from_str('x=0..2,y=0..2')) == \
+           {Box.from_str('x=3..3,y=1..3'), Box.from_str('x=1..2,y=3..3')}
+
+    # 3d boxes overlapping in 3 dimensions
+    assert Box.from_str('x=0..2,y=0..2,z=0..2').subtract(Box.from_str('x=1..3,y=1..3,z=1..3')) == \
+           {Box.from_str('x=0..0,y=0..2,z=0..2'), Box.from_str('x=1..2,y=0..0,z=0..2'),
+            Box.from_str('x=1..2,y=1..2,z=0..0')}
+
+    # full overlap
+    assert Box.from_str('x=0..1,y=0..1,z=0..1').subtract(Box.from_str('x=0..1,y=0..1,z=0..1')) == set()
 
     # 2d overlap in the middle
     assert Box.from_str('x=0..2,y=0..2').subtract(Box.from_str('x=1..1,y=1..1')) == \
