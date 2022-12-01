@@ -2,3 +2,4 @@ neo4j-connector
 requests
 numpy
 scipy
+pandas
